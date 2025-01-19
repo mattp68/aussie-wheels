@@ -1,5 +1,6 @@
 'use client';
 
+import React, { JSX } from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaCar, FaMotorcycle, FaShip, FaUsers } from 'react-icons/fa';
 import { MdDirectionsBoat } from 'react-icons/md';

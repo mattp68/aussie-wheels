@@ -131,15 +131,16 @@ export const toggleAttendance = async (eventId: string, userId: string): Promise
       throw new Error('Event not found');
     }
 
-    const eventData = eventSnap.data() as Event;
+    const eventData = eventSnap.data();
     const attendees = eventData.attendees || [];
     
     // Toggle attendance
     const isAttending = attendees.includes(userId);
     const updatedAttendees = isAttending
-      ? attendees.filter(id => id !== userId)
+      ? attendees.filter((id: string) => id !== userId)
       : [...attendees, userId];
 
+    // Only update the attendees array and updatedAt timestamp
     await updateDoc(eventRef, {
       attendees: updatedAttendees,
       updatedAt: serverTimestamp(),
@@ -161,7 +162,7 @@ export const getEvent = async (eventId: string): Promise<Event | null> => {
 
     const eventData = eventSnap.data();
     return {
-      eventId: eventSnap.id,
+      id: eventSnap.id,
       ...eventData,
       date: eventData.date instanceof Timestamp ? eventData.date.toDate() : new Date(eventData.date),
       createdAt: eventData.createdAt?.toDate() || new Date(),
@@ -179,16 +180,13 @@ export const getAllEvents = async (): Promise<Event[]> => {
     const q = query(eventsRef, orderBy('date', 'asc')); // Order by date ascending
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        eventId: doc.id,
-        ...data,
-        date: data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date),
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-      } as Event;
-    });
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date instanceof Timestamp ? doc.data().date.toDate() : new Date(doc.data().date),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+      updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+    })) as Event[];
   } catch (error) {
     console.error('Error fetching events:', error);
     throw error;

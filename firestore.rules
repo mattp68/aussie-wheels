@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        // Allow event creator to update all fields
+        (request.auth.uid == resource.data.createdBy) ||
+        // Allow authenticated users to only update the attendees array
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees', 'updatedAt']))
+      );
+      allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+    }
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if false;  // Restrict write access after setup
+    }
+  }
+}
