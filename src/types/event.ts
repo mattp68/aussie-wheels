@@ -11,7 +11,7 @@ export interface AustralianAddress {
 }
 
 export interface Event {
-  eventId: string;
+  id: string;
   name: string;
   type: EventType;
   date: Date;
